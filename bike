@@ -1,0 +1,111 @@
+# James Farrell
+
+import sqlite3
+import datetime
+import pymongo
+from pymongo import MongoClient
+
+mc = pymongo.MongoClient('mongodb+srv://m001-student:m001-mongodb-basics@sandbox.zsf34.mongodb.net/myFirstDatabase?retryWrites=true&w=majority')
+db = mc['bikeData'] # bikeData is the database
+bikeStation = db.bikeStationdb
+
+# connect to the output database and name it index.sqlite
+conn = sqlite3.connect('index.sqlite')
+# forces database to retun strings for TEXT attributes
+conn.text_factory = str
+# get the cursor for the connection
+cur = conn.cursor()
+
+# Drop the Tables each time the code is run so you capture changes made to the way data is processed
+cur.executescript('DROP TABLE IF EXISTS bikeStation')
+
+# the Create Table query should include all of the columns you need to process your data
+cur.executescript('''CREATE TABLE IF NOT EXISTS bikeStation
+    (record TEXT PRIMARY KEY, 
+    station_id INTEGER,
+    timestamp TEXT,
+    station_name TEXT,
+    total_docks INTEGER,
+    docks_in_service INTEGER,
+    available_docks INTEGER,
+    available_bikes INTEGER,
+    percent_full INTEGER,
+    status TEXT,
+    latitude REAL,
+    longitude REAL)''')
+    # use REAL not INT for coordinates
+
+count = 0
+# Loop through entire data set
+# adapted from "MongoDB cursor & find(): Finding all Documents in a Collection"
+for bike in bikeStation.find(): 
+    
+    try: # error handling
+
+        # it should convert ISO formatted date to a date time
+        isodate = bike["timestamp"]
+        dt = datetime.datetime.fromisoformat(isodate)
+        timestamp = datetime.datetime.timestamp(dt)
+
+        # it should cast numeric variables as int() or float()       
+        rec = bike["record"]
+        statid = int(bike["id"])
+        #timestamp = bike["timestamp"]
+        statname = bike["station_name"]
+        totaldocks = int(bike["total_docks"])
+        docksinserv = int(bike["docks_in_service"])
+        availdocks = int(bike["available_docks"])
+        availbikes = int(bike["available_bikes"])
+        percfull = int(bike["percent_full"])
+        stat = bike["status"]
+        lat = float(bike["latitude"])
+        long = float(bike["longitude"])
+        
+        # the insert query should include all of the columns you need to add your data
+        cur.execute('''INSERT INTO bikeStation
+            (record,
+            station_id,
+            timestamp,
+            station_name,
+            total_docks,
+            docks_in_service,
+            available_docks,
+            available_bikes,
+            percent_full,
+            status,
+            latitude,
+            longitude) 
+
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?)''',
+
+            (rec,
+            statid,
+            timestamp,
+            statname,
+            totaldocks,
+            docksinserv,
+            availdocks,
+            availbikes,
+            percfull,
+            stat,
+            lat,
+            long))
+
+        # increment count
+        count = count + 1    
+
+        # commit the insert statemnt(s) for every 100 records so do not slow program down       
+        if count%100 == 0:
+            print(count, isodate)
+            conn.commit()
+
+    # Display an error message and break out of the data processing loop if the data is not of the correct format.
+    
+    except ValueError:
+        print("\nValueError:", bike, "Incorrectly Formatted")
+        break
+
+# Remember to commit after the end of the loop to make sure ALL data is saved!!    
+print(count,"Bike Station Data Processed")
+conn.commit()
+conn.close()
