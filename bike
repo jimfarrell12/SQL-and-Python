@@ -9,7 +9,7 @@ mc = pymongo.MongoClient('mongodb+srv://m001-student:m001-mongodb-basics@sandbox
 db = mc['bikeData'] # bikeData is the database
 bikeStation = db.bikeStationdb
 
-# connect to the output database and name it index.sqlite
+# connect to the output database named index.sqlite
 conn = sqlite3.connect('index.sqlite')
 # forces database to retun strings for TEXT attributes
 conn.text_factory = str
@@ -19,7 +19,7 @@ cur = conn.cursor()
 # Drop the Tables each time the code is run so you capture changes made to the way data is processed
 cur.executescript('DROP TABLE IF EXISTS bikeStation')
 
-# the Create Table query should include all of the columns you need to process your data
+# the Create Table query includes all of the columns needed to process data
 cur.executescript('''CREATE TABLE IF NOT EXISTS bikeStation
     (record TEXT PRIMARY KEY, 
     station_id INTEGER,
@@ -42,12 +42,12 @@ for bike in bikeStation.find():
     
     try: # error handling
 
-        # it should convert ISO formatted date to a date time
+        # to convert ISO formatted date to a date time
         isodate = bike["timestamp"]
         dt = datetime.datetime.fromisoformat(isodate)
         timestamp = datetime.datetime.timestamp(dt)
 
-        # it should cast numeric variables as int() or float()       
+        # to cast numeric variables as int() or float()       
         rec = bike["record"]
         statid = int(bike["id"])
         #timestamp = bike["timestamp"]
@@ -61,7 +61,7 @@ for bike in bikeStation.find():
         lat = float(bike["latitude"])
         long = float(bike["longitude"])
         
-        # the insert query should include all of the columns you need to add your data
+        # the insert query includes all of the columns needed to add data
         cur.execute('''INSERT INTO bikeStation
             (record,
             station_id,
@@ -94,7 +94,7 @@ for bike in bikeStation.find():
         # increment count
         count = count + 1    
 
-        # commit the insert statemnt(s) for every 100 records so do not slow program down       
+        # commit the insert statemnt for every 100 records     
         if count%100 == 0:
             print(count, isodate)
             conn.commit()
@@ -105,7 +105,7 @@ for bike in bikeStation.find():
         print("\nValueError:", bike, "Incorrectly Formatted")
         break
 
-# Remember to commit after the end of the loop to make sure ALL data is saved!!    
+# Commit after the end of the loop   
 print(count,"Bike Station Data Processed")
 conn.commit()
 conn.close()
