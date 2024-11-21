@@ -64,13 +64,13 @@ create temp table sla_startdates as
 		select 
 			ordernumber
 			,orderpriority
-            ,createdate
-            ,completedate
+            		,createdate
+            		,completedate
 		--slas
 			,"is_biz_hrs"
 			,case when "is_biz_hrs" = 0 or "sla_window_days" < 1 then "sla_window_days"*24 else "sla_window_days"*"biz_hrs_in_day" end as "sla_window_hrs"
-		from wos
-		left join sla_windows sw on sw.orderpriority = r.orderpriority
+		from wos w
+		left join sla_windows sw on sw.orderpriority = w.orderpriority
 		--order by 1,2
 	)
 	,timestamps_adj as (
