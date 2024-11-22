@@ -1,9 +1,9 @@
 with numbers as (
 	select cast(row_number()over() as int) as "num"
 	from orders
-	limit 50 --number of list items never more than 20, overestimate for extreme anomalies 
+	limit 50 --number of list items never more than 20, overestimate for extreme anomalies
 )
-,split_items as (
+,split_items as ( --split item list at commas, pivot items to records
     select
 		orderid
 		,createdate
@@ -18,9 +18,9 @@ with numbers as (
 )
 --end ctes
 select 
-	"label"
+	"item"
 	,count(distinct orderid) as "order_volume"
 	,max(date(createdate)) as "last_create_date"
-from split_labels
+from split_items
 group by 1
 order by 1,2 desc
