@@ -3,7 +3,7 @@ with numbers as (
 	from orders
 	limit 50 --number of list items never more than 20, overestimate for extreme anomalies
 )
-,split_items as ( --split item list at commas, pivot items to records
+,split_items as ( --split list at commas, pivot list items
     select
 		orderid
 		,createdate
