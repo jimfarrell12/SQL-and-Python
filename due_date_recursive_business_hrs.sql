@@ -29,21 +29,15 @@ create temp table wos as
         and department = 1
         and createdate > current_date - 999
 
-create temp table sla_windows as 
+create temp table sla_windows as --assign window re order priority
 	select 
 		orderpriority
 	--priority
 		,case 
-			when orderpriority = 'Emergency' then 'P1'
-			when orderpriority = 'Next Day' then 'P2'
-			when orderpriority = 'Normal Service' then 'P3'
-			when orderpriority = 'Non-Critical' then 'P4'
-			end as "priority"
-		,case "priority"
-			when 'P1' then 1/24::float
-			when 'P2' then 1
-			when 'P3' then 2
-			when 'P4' then 3
+			when orderpriority = 'Emergency' then 1/24::float
+			when orderpriority = 'Next Day' then 1
+			when orderpriority = 'Normal Service' then 2
+			when orderpriority = 'Non-Critical' then 3
 			end as "sla_window_days"
 	--rename with window
 		,case when "sla_window_days" < 3 then "sla_window_days"*24||' hrs' else "sla_window_days"||' days' end as "sla_priority_name"
@@ -70,9 +64,8 @@ create temp table sla_startdates as
 		left join sla_windows sw on sw.orderpriority = w.orderpriority
 		--order by 1,2
 	)
-	,timestamps_adj as (
+	,timestamps_adj as ( --adjust clock start for ahw, weekends
 		select *
-		--adjust clock start for ahw, weekends
 			,case
 				when "is_biz_hrs" = 0 then createdate
 			--friday after close -> monday
@@ -89,10 +82,9 @@ create temp table sla_startdates as
 				end as "clockstart"
 		from timestamps_sla
 	)
-	,timestamps_adj_holidays as (
+	,timestamps_adj_holidays as ( --apply second adjustment for holidays
 		select 
 			ta.*
-		--apply second adjustment for holidays
 			,case
 				when "is_biz_hrs" = 0 then "clockstart"
 			--friday holiday -> monday
@@ -107,7 +99,7 @@ create temp table sla_startdates as
 	select * from timestamps_adj_holidays;
 
 
-with recursive duedates (
+with recursive duedates ( --recursively add 1 hr until window = 0, skip ahw, weekends, holidays
 	ordernumber
 	,orderpriority
 	,"sla_priority"
