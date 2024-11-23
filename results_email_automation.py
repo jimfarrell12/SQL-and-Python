@@ -6,7 +6,7 @@ from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
-# load configuration
+# config
 def load_config(config_path):
     with open(config_path, 'r', encoding='utf-8') as file:
         return json.load(file)
