@@ -20,14 +20,13 @@ create temp table calendar as --manually load federal holidays in temp
 
 create temp table wos as --records to capture
     select 
-        workordernumber
+        orderid
         ,orderpriority
         ,createdate
         ,completedate
     from workorders
     where orderstatus = 'completed'
-        and department = 1
-        and createdate > current_date - 999
+	and createdate > current_date - 999
 
 create temp table sla_windows as --assign window re order priority
 	select 
@@ -41,7 +40,7 @@ create temp table sla_windows as --assign window re order priority
 			end as "sla_window_days"
 	--rename with window
 		,case when "sla_window_days" < 3 then "sla_window_days"*24||' hrs' else "sla_window_days"||' days' end as "sla_priority_name"
-        ,case when "is_biz_hrs" = 0 or "sla_window_days" < 1 then "sla_window_days"*24 else "sla_window_days"*"biz_hrs_in_day" end as "sla_window_hrs"
+        	,case when "is_biz_hrs" = 0 or "sla_window_days" < 1 then "sla_window_days"*24 else "sla_window_days"*"biz_hrs_in_day" end as "sla_window_hrs"
 	--biz hrs
 		,case when "sla_window_days" < 1 then 1 else 0 end as "is_biz_hrs"
 		,8 as "biz_start"
