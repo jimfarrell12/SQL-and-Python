@@ -18,7 +18,7 @@ create temp table calendar as --manually load federal holidays in temp
 	from workorders
 	limit 2000;
 
-create temp table wos as 
+create temp table wos as --records to capture
     select 
         workordernumber
         ,orderpriority
