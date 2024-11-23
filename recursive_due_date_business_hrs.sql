@@ -1,4 +1,4 @@
-create temp table calendar as 
+create temp table calendar as --manually load federal holidays in temp
 	select 
 		date(dateadd(day,1000,current_date)-row_number()over()) as "date"
 		,case 
