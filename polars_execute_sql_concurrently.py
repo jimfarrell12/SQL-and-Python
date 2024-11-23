@@ -31,73 +31,68 @@ def execute_sql(start_date, end_date, sql_query, db_params):
         raise
 
 # main exec
-def main():
-    try:
-        # load config
-        config_path = Path("/path/to/config.json")
-        config = load_config(config_path)
+try:
+    # load config
+    config_path = Path("/path/to/config.json")
+    config = load_config(config_path)
 
-        # setup paths and parameters
-        folder_path = Path(config["folder_path"])
-        sql_file = folder_path / "Queries" / "query.sql"
-        archive_path = folder_path / "Archive"
-        excel_file = archive_path / f"{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+    # setup paths and parameters
+    folder_path = Path(config["folder_path"])
+    sql_file = folder_path / "Queries" / "query.sql"
+    archive_path = folder_path / "Archive"
+    excel_file = archive_path / f"{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
 
-        db_params = config["db_params"]
-        num_segments = config["num_segments"]
-        days_prior = config["days_prior"]
+    db_params = config["db_params"]
+    num_segments = config["num_segments"]
+    days_prior = config["days_prior"]
 
-        # calculate date ranges
-        current_date_time = datetime.now()
-        end_date = current_date_time
-        start_date = end_date - timedelta(days=days_prior)
-        segment_length = timedelta(days=days_prior / num_segments)
+    # calculate date ranges
+    current_date_time = datetime.now()
+    end_date = current_date_time
+    start_date = end_date - timedelta(days=days_prior)
+    segment_length = timedelta(days=days_prior / num_segments)
 
-        # start logging
-        logging.info(f"Process started at {current_date_time}")
+    # start logging
+    logging.info(f"Process started at {current_date_time}")
 
-        # read SQL query
-        if not sql_file.exists():
-            logging.error(f"SQL file not found: {sql_file}")
-            return
+    # read SQL query
+    if not sql_file.exists():
+        logging.error(f"SQL file not found: {sql_file}")
+        return
 
-        with open(sql_file, 'r', encoding='utf-8') as sql:
-            sql_query = sql.read()
+    with open(sql_file, 'r', encoding='utf-8') as sql:
+        sql_query = sql.read()
 
-        # execute queries concurrently
-        futures = []
-        results = []
+    # execute queries concurrently
+    futures = []
+    results = []
 
-        with concurrent.futures.ThreadPoolExecutor(max_workers=num_segments) as executor:
-            for i in range(num_segments):
-                segment_start = start_date + i * segment_length
-                segment_end = start_date + (i + 1) * segment_length
-                future = executor.submit(execute_sql, segment_start, segment_end, sql_query, db_params)
-                futures.append(future)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=num_segments) as executor:
+        for i in range(num_segments):
+            segment_start = start_date + i * segment_length
+            segment_end = start_date + (i + 1) * segment_length
+            future = executor.submit(execute_sql, segment_start, segment_end, sql_query, db_params)
+            futures.append(future)
 
-            # track progress
-            for completed, future in enumerate(concurrent.futures.as_completed(futures), 1):
-                logging.info(f"Segment {completed}/{num_segments} completed.")
-                results.append(future.result())
+        # track progress
+        for completed, future in enumerate(concurrent.futures.as_completed(futures), 1):
+            logging.info(f"Segment {completed}/{num_segments} completed.")
+            results.append(future.result())
 
-        # combine results
-        combined_df = pd.concat(results, ignore_index=True)
+    # combine results
+    combined_df = pd.concat(results, ignore_index=True)
 
-        # ensure output folder exists
-        archive_path.mkdir(parents=True, exist_ok=True)
+    # ensure output folder exists
+    archive_path.mkdir(parents=True, exist_ok=True)
 
-        # save to file
-        pl.from_pandas(combined_df).write_csv(excel_file)
-        logging.info(f"Data exported to: {excel_file}")
+    # save to file
+    pl.from_pandas(combined_df).write_csv(excel_file)
+    logging.info(f"Data exported to: {excel_file}")
 
-        # log completion time
-        finish_time = datetime.now()
-        execution_time = finish_time - current_date_time
-        logging.info(f"Process finished at {finish_time}, Total time: {execution_time}")
+    # log completion time
+    finish_time = datetime.now()
+    execution_time = finish_time - current_date_time
+    logging.info(f"Process finished at {finish_time}, Total time: {execution_time}")
 
-    except Exception as e:
-        logging.error(f"Unexpected error: {e}")
-
-# execute
-if __name__ == "__main__":
-    main()
+except Exception as e:
+    logging.error(f"Unexpected error: {e}")
