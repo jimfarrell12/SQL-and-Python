@@ -49,7 +49,7 @@ create temp table sla_windows as --assign window re order priority
 	from (select distinct orderpriority from wos)
 	order by 2,1;
 
-create temp table sla_startdates as 
+create temp table sla_startdates as --convert window days to hrs
 	with timestamps_sla as (
 		select 
 			ordernumber
