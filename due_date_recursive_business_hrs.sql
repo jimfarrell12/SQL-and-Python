@@ -53,7 +53,7 @@ create temp table sla_startdates as --convert window days to hrs
 	with timestamps_sla as (
 		select 
 			ordernumber
-			,orderpriority
+			,w.orderpriority
             		,createdate
             		,completedate
 		--slas
