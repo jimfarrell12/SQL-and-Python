@@ -28,7 +28,7 @@ create temp table wos as --records to capture
     where orderstatus = 'completed'
 	and createdate > current_date - 999
 
-create temp table sla_windows as --assign window re order priority
+create temp table sla_windows as --assign window and biz vs. stnd designation re order priority
 	select 
 		orderpriority
 	--priority
