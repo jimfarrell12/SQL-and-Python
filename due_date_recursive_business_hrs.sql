@@ -33,7 +33,7 @@ create temp table sla_windows as --assign window and biz vs. stnd designation re
 		orderpriority
 	--priority
 		,case 
-			when orderpriority = 'Emergency 1-Hour' then 1/24::float
+			when orderpriority = 'Emergency 1' then 1/24::float
 			when orderpriority = 'Emergency 2' then 2/24::float
 			when orderpriority = 'Emergency 3' then 3/24::float
 			when orderpriority = 'Next-Day' then 1
