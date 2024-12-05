@@ -47,6 +47,7 @@ create temp table sla_windows as --assign window and biz vs. stnd designation re
 		,"biz_end" - "biz_start" as "biz_hrs_in_day"
 	--rename with window
 		,case when "sla_window_days" < 1 then "sla_window_days"*24||' hrs' else "sla_window_days"||' days' end as "sla_priority_name"
+	--convert days to hrs
         	,case when "is_biz_hrs" = 0 or "sla_window_days" < 1 then "sla_window_days"*24 else "sla_window_days"*"biz_hrs_in_day" end as "sla_window_hrs"
 	from (select distinct orderpriority from wos)
 	order by 2,1;
@@ -60,7 +61,7 @@ create temp table sla_startdates as --convert window days to hrs
             		,completedate
 		--slas
 			,"is_biz_hrs"
-			,case when "is_biz_hrs" = 0 or "sla_window_days" < 1 then "sla_window_days"*24 else "sla_window_days"*"biz_hrs_in_day" end as "sla_window_hrs"
+			,"sla_window_hrs"
 		from wos w
 		left join sla_windows sw on sw.orderpriority = w.orderpriority
 		--order by 1,2
