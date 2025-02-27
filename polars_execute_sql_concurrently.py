@@ -23,7 +23,7 @@ def execute_sql(start_date, end_date, sql_query, db_params):
     try:
         with psycopg2.connect(**db_params) as connection:
             with connection.cursor() as cursor:
-                cursor.execute(sql_query, (start_date, end_date, start_date, end_date))
+                cursor.execute(sql_query, (start_date, end_date))
                 result = pd.DataFrame(cursor.fetchall(), columns=[desc[0] for desc in cursor.description])
                 return result
     except Exception as e:
