@@ -35,32 +35,27 @@ def upload_data(df, connection, schema, table):
             raise
 
 # main execution
-def main():
-    try:
-        # paths
-        config_path = Path("/path/to/config.json")
-        config = load_config(config_path)
+try:
+    # paths
+    config_path = Path("/path/to/config.json")
+    config = load_config(config_path)
 
-        # postgres connection params
-        postgres_params = config["postgres"]
+    # postgres connection params
+    postgres_params = config["postgres"]
 
-        # read data
-        data_file_path = Path(config["data_file"])
-        if not data_file_path.exists():
-            logging.error(f"Data file not found: {data_file_path}")
-            return
+    # read data
+    data_file_path = Path(config["data_file"])
+    if not data_file_path.exists():
+        logging.error(f"Data file not found: {data_file_path}")
+        return
 
-        df = pd.read_csv(data_file_path)
+    df = pd.read_csv(data_file_path)
 
-        # upload to postgres
-        with psycopg2.connect(**postgres_params) as postgres_conn:
-            upload_data(df, postgres_conn, config["schema"], config["table"])
-        
-        logging.info("Process completed successfully.")
+    # upload to postgres
+    with psycopg2.connect(**postgres_params) as postgres_conn:
+        upload_data(df, postgres_conn, config["schema"], config["table"])
+    
+    logging.info("Process completed successfully.")
 
-    except Exception as e:
-        logging.error(f"Unexpected error: {e}")
-
-# execute
-if __name__ == "__main__":
-    main()
+except Exception as e:
+    logging.error(f"Unexpected error: {e}")
