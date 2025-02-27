@@ -55,7 +55,7 @@ try:
     # start logging
     logging.info(f"Process started at {current_date_time}")
 
-    # read SQL query
+    # read sql query
     if not sql_file.exists():
         logging.error(f"SQL file not found: {sql_file}")
         return
@@ -63,10 +63,10 @@ try:
     with open(sql_file, 'r', encoding='utf-8') as sql:
         sql_query = sql.read()
 
-    # execute queries concurrently
     futures = []
     results = []
 
+    # execute queries concurrently
     with concurrent.futures.ThreadPoolExecutor(max_workers=num_segments) as executor:
         for i in range(num_segments):
             segment_start = start_date + i * segment_length
